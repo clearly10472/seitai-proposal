@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SNS投稿自動化システム ご提案</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+    font-size: 14px;
+    line-height: 1.85;
+    color: #1e293b;
+    background: #f8fafc;
+  }
+
+  .page {
+    max-width: 860px;
+    margin: 0 auto;
+    background: #fff;
+    box-shadow: 0 0 40px rgba(0,0,0,0.08);
+  }
+
+  /* ── 表紙 ── */
+  .cover {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #1d4ed8 100%);
+    color: #fff;
+    padding: 72px 64px 64px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::before {
+    content: "";
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 320px; height: 320px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+  }
+  .cover::after {
+    content: "";
+    position: absolute;
+    bottom: -80px; left: 40%;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.03);
+  }
+  .cover-tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: #cbd5e1;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    padding: 5px 16px;
+    border-radius: 20px;
+    margin-bottom: 28px;
+  }
+  .cover h1 {
+    font-size: 36px;
+    font-weight: 900;
+    line-height: 1.35;
+    margin-bottom: 20px;
+    letter-spacing: -0.01em;
+  }
+  .cover h1 span {
+    color: #93c5fd;
+  }
+  .cover-sub {
+    font-size: 14px;
+    color: #94a3b8;
+    line-height: 1.7;
+  }
+  .cover-platforms {
+    display: flex;
+    gap: 10px;
+    margin-top: 36px;
+    flex-wrap: wrap;
+  }
+  .cover-platforms span {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #e2e8f0;
+    font-size: 12px;
+    padding: 5px 14px;
+    border-radius: 20px;
+  }
+
+  /* ── 本文エリア ── */
+  .body {
+    padding: 56px 64px;
+  }
+
+  /* ── セクション ── */
+  .section {
+    margin-bottom: 60px;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: #3b82f6;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  h2 {
+    font-size: 22px;
+    font-weight: 900;
+    color: #0f172a;
+    margin-bottom: 16px;
+    line-height: 1.35;
+  }
+  .lead {
+    color: #475569;
+    font-size: 14px;
+    margin-bottom: 24px;
+    line-height: 1.9;
+  }
+
+  /* ── 課題リスト ── */
+  .pain-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .pain-item {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: #7f1d1d;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .pain-item .emoji { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── Before/After ── */
+  .ba {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .ba-col {
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .ba-col.before {
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+  }
+  .ba-col.after {
+    background: linear-gradient(135deg, #eff6ff, #f0fdf4);
+    border: 1.5px solid #bfdbfe;
+  }
+  .ba-col .ba-head {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+  }
+  .ba-col.before .ba-head { color: #64748b; }
+  .ba-col.after  .ba-head { color: #1d4ed8; }
+  .ba-col ul { list-style: none; }
+  .ba-col ul li {
+    font-size: 13px;
+    padding: 5px 0;
+    padding-left: 20px;
+    position: relative;
+    color: #334155;
+  }
+  .ba-col ul li::before { position: absolute; left: 0; }
+  .ba-col.before ul li::before { content: "−"; color: #94a3b8; }
+  .ba-col.after  ul li::before { content: "✓"; color: #16a34a; font-weight: 700; }
+
+  /* ── プラットフォームカード ── */
+  .platform-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .pc {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 24px;
+    background: #fff;
+    transition: box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .pc::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .pc.gm::before   { background: #4285f4; }
+  .pc.ig::before   { background: linear-gradient(90deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); }
+  .pc.x::before    { background: #000; }
+  .pc.note::before { background: #41c9b4; }
+  .pc.line::before { background: #06c755; }
+
+  .pc-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .pc-icon {
+    font-size: 22px;
+    width: 44px; height: 44px;
+    background: #f1f5f9;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pc-title { font-size: 16px; font-weight: 700; color: #0f172a; }
+  .pc-freq  { font-size: 11px; color: #64748b; margin-top: 1px; }
+
+  .pc-desc {
+    font-size: 13px;
+    color: #475569;
+    line-height: 1.75;
+    margin-bottom: 14px;
+  }
+  .pc-why {
+    background: #f8fafc;
+    border-left: 3px solid #3b82f6;
+    border-radius: 0 8px 8px 0;
+    padding: 12px 14px;
+  }
+  .pc-why .why-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #3b82f6;
+    margin-bottom: 6px;
+  }
+  .pc-why p {
+    font-size: 12px;
+    color: #475569;
+    line-height: 1.7;
+  }
+
+  /* ── スケジュール ── */
+  .schedule {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .schedule-row {
+    display: grid;
+    grid-template-columns: 120px 80px 1fr;
+    align-items: center;
+    padding: 14px 20px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .schedule-row:last-child { border-bottom: none; }
+  .schedule-row:nth-child(even) { background: #f8fafc; }
+  .schedule-row .day  { font-weight: 700; color: #1e40af; font-size: 13px; }
+  .schedule-row .time { font-size: 12px; color: #64748b; }
+  .badges { display: flex; flex-wrap: wrap; gap: 6px; }
+  .badge {
+    background: #eff6ff;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+
+  /* ── ポイントカード ── */
+  .point-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  .point-card {
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+  }
+  .point-card .p-icon { font-size: 26px; margin-bottom: 10px; }
+  .point-card .p-title { font-size: 13px; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
+  .point-card .p-desc  { font-size: 12px; color: #64748b; line-height: 1.65; }
+
+  /* ── コスト表 ── */
+  .cost-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .cost-table thead tr {
+    background: #0f172a;
+    color: #fff;
+  }
+  .cost-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+  }
+  .cost-table td {
+    padding: 13px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: top;
+  }
+  .cost-table tr:last-child td { border-bottom: none; }
+  .cost-table tr:nth-child(even) td { background: #f8fafc; }
+  .cost-table .cost-note { font-size: 11px; color: #94a3b8; margin-top: 3px; }
+  .cost-table .price { font-weight: 700; color: #0f172a; }
+
+  .cost-highlight {
+    margin-top: 16px;
+    background: linear-gradient(135deg, #eff6ff, #f0fdf4);
+    border: 1.5px solid #bfdbfe;
+    border-radius: 12px;
+    padding: 20px 24px;
+  }
+  .cost-highlight .ch-title { font-weight: 700; font-size: 15px; color: #1e40af; margin-bottom: 6px; }
+  .cost-highlight .ch-sub   { font-size: 12px; color: #475569; line-height: 1.75; }
+
+  /* ── まとめ ── */
+  .summary-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .summary-list li {
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 13px 16px;
+    font-size: 13px;
+    color: #334155;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .summary-list li .s-check {
+    color: #3b82f6;
+    font-weight: 700;
+    font-size: 15px;
+    flex-shrink: 0;
+    margin-top: -1px;
+  }
+
+  .cta-box {
+    margin-top: 24px;
+    background: linear-gradient(135deg, #0f172a, #1e3a5f);
+    color: #fff;
+    border-radius: 14px;
+    padding: 28px 32px;
+  }
+  .cta-box .cta-title { font-size: 16px; font-weight: 700; margin-bottom: 10px; color: #93c5fd; }
+  .cta-box p { font-size: 13px; color: #cbd5e1; line-height: 1.8; }
+
+  /* ── 区切り ── */
+  hr { border: none; border-top: 1.5px solid #f1f5f9; margin: 48px 0; }
+
+  /* ── フッター ── */
+  footer {
+    background: #0f172a;
+    color: #64748b;
+    text-align: center;
+    padding: 24px;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── コスト比較（アンカリング） ── */
+  .anchor-section {
+    background: #0f172a;
+    border-radius: 16px;
+    padding: 36px;
+    margin-bottom: 24px;
+    color: #fff;
+  }
+  .anchor-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: #64748b;
+    margin-bottom: 20px;
+  }
+  .anchor-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+  }
+  .anchor-col {
+    padding: 0 28px;
+    border-right: 1px solid rgba(255,255,255,0.08);
+    text-align: center;
+  }
+  .anchor-col:first-child { padding-left: 0; }
+  .anchor-col:last-child  { padding-right: 0; border-right: none; }
+  .anchor-col .a-label {
+    font-size: 11px;
+    color: #64748b;
+    margin-bottom: 10px;
+    letter-spacing: 0.05em;
+  }
+  .anchor-col .a-price {
+    font-size: 32px;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .anchor-col .a-price .unit { font-size: 14px; font-weight: 400; margin-left: 2px; }
+  .anchor-col .a-price .slash { text-decoration: line-through; opacity: 0.4; }
+  .anchor-col.col-outsource .a-price { color: #f87171; }
+  .anchor-col.col-diy       .a-price { color: #fb923c; }
+  .anchor-col.col-ai        .a-price { color: #34d399; }
+  .anchor-col .a-sub {
+    font-size: 11px;
+    color: #64748b;
+    line-height: 1.6;
+  }
+  .anchor-col .a-badge {
+    display: inline-block;
+    background: #1e3a5f;
+    color: #93c5fd;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-top: 8px;
+  }
+  .anchor-col.col-ai .a-badge {
+    background: #064e3b;
+    color: #6ee7b7;
+  }
+
+  .saving-bar {
+    margin-top: 24px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .saving-bar .sb-text {
+    font-size: 13px;
+    color: #94a3b8;
+    line-height: 1.6;
+  }
+  .saving-bar .sb-text strong { color: #fff; }
+  .saving-bar .sb-num {
+    flex-shrink: 0;
+    text-align: center;
+  }
+  .saving-bar .sb-num .n { font-size: 28px; font-weight: 900; color: #34d399; }
+  .saving-bar .sb-num .s { font-size: 11px; color: #64748b; margin-top: 2px; }
+
+  .outsource-breakdown {
+    margin-bottom: 24px;
+  }
+  .outsource-breakdown table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .outsource-breakdown th {
+    background: #fef2f2;
+    color: #991b1b;
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 12px;
+    border-bottom: 2px solid #fecaca;
+  }
+  .outsource-breakdown td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+  }
+  .outsource-breakdown tr:last-child td {
+    background: #fef2f2;
+    font-weight: 700;
+    color: #991b1b;
+  }
+  .outsource-breakdown .od-price {
+    font-weight: 700;
+    text-align: right;
+    white-space: nowrap;
+  }
+  .outsource-breakdown .od-note { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+
+  .roi-box {
+    background: linear-gradient(135deg, #064e3b, #065f46);
+    border-radius: 14px;
+    padding: 28px 32px;
+    color: #fff;
+    margin-top: 24px;
+  }
+  .roi-box .roi-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #6ee7b7;
+    margin-bottom: 12px;
+    letter-spacing: 0.05em;
+  }
+  .roi-box .roi-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    text-align: center;
+  }
+  .roi-box .roi-item .ri-num {
+    font-size: 28px;
+    font-weight: 900;
+    color: #34d399;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .roi-box .roi-item .ri-label {
+    font-size: 11px;
+    color: #a7f3d0;
+    line-height: 1.6;
+  }
+
+  .ai-cost-box {
+    background: #f0fdf4;
+    border: 1.5px solid #86efac;
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-top: 24px;
+  }
+  .ai-cost-box .ac-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .ai-cost-box .ac-title { font-size: 15px; font-weight: 700; color: #14532d; }
+  .ai-cost-box .ac-price {
+    font-size: 28px;
+    font-weight: 900;
+    color: #16a34a;
+  }
+  .ai-cost-box .ac-price span { font-size: 14px; font-weight: 400; }
+  .ai-cost-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .ai-cost-table td { padding: 7px 10px; border-bottom: 1px solid #bbf7d0; color: #166534; }
+  .ai-cost-table tr:last-child td { border-bottom: none; }
+  .ai-cost-table .acp { text-align: right; font-weight: 700; white-space: nowrap; }
+
+  /* ── 印刷 ── */
+  @media print {
+    body { background: #fff; font-size: 12px; }
+    .page { box-shadow: none; }
+    .cover { padding: 48px 48px 40px; }
+    .body  { padding: 40px 48px; }
+    .cover h1 { font-size: 28px; }
+    .section { margin-bottom: 40px; page-break-inside: avoid; }
+    .platform-cards { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ══ 表紙 ══ -->
+<div class="cover">
+  <div class="cover-tag">AI CONTENT AUTOMATION — PROPOSAL</div>
+  <h1>SNS投稿が、毎週<br><span>自動で届く</span>仕組みを<br>作りました。</h1>
+  <p class="cover-sub">
+    AIが坂本先生のことを学習し、毎週5つのSNSに向けた<br>
+    コンテンツ案を自動で作成。先生は確認してコピペするだけです。
+  </p>
+  <div class="cover-platforms">
+    <span>📍 Googleマップ</span>
+    <span>📸 Instagram</span>
+    <span>🐦 X（旧Twitter）</span>
+    <span>📝 note</span>
+    <span>💬 LINE</span>
+  </div>
+</div>
+
+<!-- ══ 本文 ══ -->
+<div class="body">
+
+  <!-- 1. 課題 -->
+  <div class="section">
+    <div class="section-label">PROBLEM</div>
+    <h2>SNS運用、こんなお悩みはありませんか？</h2>
+    <p class="lead">
+      整体院の先生は、施術・患者対応・院内管理と、やることが山積みです。
+      そこに「SNSも毎週更新しなければ」というプレッシャーが加わると、
+      どうしても後回しになりがちです。
+    </p>
+    <div class="pain-list">
+      <div class="pain-item"><span class="emoji">💭</span>何を投稿すればいいか、毎回悩む</div>
+      <div class="pain-item"><span class="emoji">⏰</span>書く時間が取れず、投稿が途切れてしまう</div>
+      <div class="pain-item"><span class="emoji">🔁</span>同じような内容が続いて、ネタ切れを感じる</div>
+      <div class="pain-item"><span class="emoji">📱</span>プラットフォームごとに書き方が違って大変</div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- 2. Before/After -->
+  <div class="section">
+    <div class="section-label">SOLUTION</div>
+    <h2>このシステムで、何が変わるか</h2>
+    <p class="lead">
+      AIが毎週自動でコンテンツ案を作成し、先生のスマートフォンに届けます。
+      先生がすることは、<strong>内容を確認して、気に入ったものをコピー＆ペーストするだけ</strong>です。
+    </p>
+    <div class="ba">
+      <div class="ba-col before">
+        <div class="ba-head">🕐 &nbsp;今まで</div>
+        <ul>
+          <li>ゼロからネタを考える</li>
+          <li>SNSごとに文章を書き直す</li>
+          <li>画像を探したり作ったりする</li>
+          <li>毎週1〜2時間かかっていた</li>
+          <li>忙しいと投稿が途切れる</li>
+        </ul>
+      </div>
+      <div class="ba-col after">
+        <div class="ba-head">✨ &nbsp;これから</div>
+        <ul>
+          <li>毎週決まった曜日・朝8時に自動生成</li>
+          <li>5プラットフォーム分をまとめて用意</li>
+          <li>Instagram用の画像もAIが自動生成</li>
+          <li>確認は数分、投稿はコピペだけ</li>
+          <li>旅行中・繁忙期でも届き続ける</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- 3. プラットフォーム -->
+  <div class="section">
+    <div class="section-label">PLATFORMS</div>
+    <h2>5つのSNS、それぞれにやる理由があります</h2>
+    <p class="lead">
+      「なんとなく投稿する」ではなく、各SNSの特性と目的を理解した上で、
+      それぞれに最適なコンテンツを自動生成します。
+    </p>
+    <div class="platform-cards">
+
+      <div class="pc gm">
+        <div class="pc-head">
+          <div class="pc-icon">📍</div>
+          <div>
+            <div class="pc-title">Googleマップ</div>
+            <div class="pc-freq">週1回（月曜）</div>
+          </div>
+        </div>
+        <div class="pc-desc">
+          「明石 整体 腰痛」などで地図検索したときに上位表示されるための投稿。地域名×症状のキーワードを入れた150〜300文字の投稿文を毎週生成します。
+        </div>
+        <div class="pc-why">
+          <div class="why-label">なぜやるのか / なぜ週1なのか</div>
+          <p>Googleは投稿頻度が高い院を検索結果で優遇します。週1回の投稿を継続することで「地図検索で選ばれる院」になることが目的です。途切れると評価が下がるため、自動化が特に重要なSNSです。</p>
+        </div>
+      </div>
+
+      <div class="pc ig">
+        <div class="pc-head">
+          <div class="pc-icon">📸</div>
+          <div>
+            <div class="pc-title">Instagram</div>
+            <div class="pc-freq">週2回（火・金）/ 画像9枚自動生成</div>
+          </div>
+        </div>
+        <div class="pc-desc">
+          テーマに沿った9枚スライドのカルーセル投稿。文章だけでなく、AIが画像も自動生成します。キャプション・ハッシュタグも含めて完成状態で届きます。
+        </div>
+        <div class="pc-why">
+          <div class="why-label">なぜ9枚スライドなのか</div>
+          <p>Instagramは複数枚投稿（カルーセル）をアルゴリズムが優遇します。特に9枚は上限枚数で最もリーチが伸びやすく、「続きが気になる」という保存率の高さが新規フォロワー獲得につながります。</p>
+        </div>
+      </div>
+
+      <div class="pc x">
+        <div class="pc-head">
+          <div class="pc-icon">🐦</div>
+          <div>
+            <div class="pc-title">X（旧Twitter）</div>
+            <div class="pc-freq">週3本（月曜にまとめて生成）</div>
+          </div>
+        </div>
+        <div class="pc-desc">
+          専門知識型・人柄型・セルフケア型の3パターンを毎週生成。「理学療法士・坂本先生」というブランドを日常的に積み上げるための投稿です。
+        </div>
+        <div class="pc-why">
+          <div class="why-label">なぜやるのか</div>
+          <p>Xは拡散力が高く、院の外にいる潜在患者に届きます。継続的に専門知識を発信することで「この人に診てもらいたい」という信頼が育ちます。週3本が、継続できるうえで効果が出るペースです。</p>
+        </div>
+      </div>
+
+      <div class="pc note">
+        <div class="pc-head">
+          <div class="pc-icon">📝</div>
+          <div>
+            <div class="pc-title">note</div>
+            <div class="pc-freq">隔週1本（第1・第3日曜）</div>
+          </div>
+        </div>
+        <div class="pc-desc">
+          2,000〜4,000文字の専門記事を隔週で生成。SEOを意識した構成で、Google検索からの長期的な集患を狙います。
+        </div>
+        <div class="pc-why">
+          <div class="why-label">なぜnoteに記事を書くのか</div>
+          <p>一度書いた記事はGoogleの検索結果に表示され続け、何年も集客し続ける「資産」になります。InstagramやXと違い、検索から来る新規患者を獲得できる唯一のSNSです。隔週なのは、質を保つためです。</p>
+        </div>
+      </div>
+
+      <div class="pc line" style="grid-column: span 2;">
+        <div class="pc-head">
+          <div class="pc-icon">💬</div>
+          <div>
+            <div class="pc-title">LINE公式アカウント</div>
+            <div class="pc-freq">月4回（3通分を月曜にまとめて生成）</div>
+          </div>
+        </div>
+        <div class="pc-desc">
+          セルフケア情報・来院促進・信頼構築の3パターンを毎週生成。既存の患者さんが「また行こう」と思うメッセージをお届けします。
+        </div>
+        <div class="pc-why">
+          <div class="why-label">なぜ月4回なのか / LINEをやる理由</div>
+          <p>LINEはメールと比べて開封率が圧倒的に高く（60〜70%）、既存患者との関係維持に最も効果的なツールです。ただし配信しすぎるとブロックされてしまうため、月4回が効果とリスクのバランスが最も良いペースです。</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- 4. スケジュール -->
+  <div class="section">
+    <div class="section-label">SCHEDULE</div>
+    <h2>毎週このスケジュールで自動生成されます</h2>
+    <p class="lead">先生が何か操作する必要はありません。朝8時にスマートフォンに通知が届き、内容を確認するだけです。</p>
+    <div class="schedule">
+      <div class="schedule-row">
+        <div class="day">月曜日</div>
+        <div class="time">朝 8:00</div>
+        <div class="badges">
+          <span class="badge">📍 Googleマップ</span>
+          <span class="badge">🐦 X投稿 3本</span>
+          <span class="badge">💬 LINE 3通</span>
+        </div>
+      </div>
+      <div class="schedule-row">
+        <div class="day">火曜日</div>
+        <div class="time">朝 8:00</div>
+        <div class="badges">
+          <span class="badge">📸 Instagram 9枚</span>
+        </div>
+      </div>
+      <div class="schedule-row">
+        <div class="day">金曜日</div>
+        <div class="time">朝 8:00</div>
+        <div class="badges">
+          <span class="badge">📸 Instagram 9枚</span>
+        </div>
+      </div>
+      <div class="schedule-row">
+        <div class="day">第1・第3日曜</div>
+        <div class="time">朝 8:00</div>
+        <div class="badges">
+          <span class="badge">📝 note記事</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- 5. 仕組みの工夫 -->
+  <div class="section">
+    <div class="section-label">FEATURES</div>
+    <h2>ただの自動化ではない、3つの工夫</h2>
+    <div class="point-cards">
+      <div class="point-card">
+        <div class="p-icon">🧠</div>
+        <div class="p-title">坂本先生を学習済み</div>
+        <div class="p-desc">院のコンセプト・話し方・NGワード・患者さんの声を事前に学習。「AIが書いた感」が出ない文章を生成します。</div>
+      </div>
+      <div class="point-card">
+        <div class="p-icon">🔁</div>
+        <div class="p-title">内容が重複しない</div>
+        <div class="p-desc">過去3ヶ月分の投稿を記憶して、同じテーマ・キーワードの繰り返しを自動で防ぎます。</div>
+      </div>
+      <div class="point-card">
+        <div class="p-icon">📬</div>
+        <div class="p-title">確認は1か所</div>
+        <div class="p-desc">すべての投稿案がDiscord（無料アプリ）に届きます。スマートフォンから確認・コピペまで完結します。</div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- 6. 費用 -->
+  <div class="section">
+    <div class="section-label">COST</div>
+    <h2>費用の比較</h2>
+    <p class="lead">
+      同じことを「外注でお願いした場合」と比べると、どれだけ違うかをご覧ください。
+    </p>
+
+    <!-- アンカー：3択比較 -->
+    <div class="anchor-section">
+      <div class="anchor-label">3つの選択肢を比べると…</div>
+      <div class="anchor-grid">
+        <div class="anchor-col col-outsource">
+          <div class="a-label">プロに外注した場合</div>
+          <div class="a-price">¥228,000<span class="unit">/月</span></div>
+          <div class="a-sub">ライター・デザイナー・<br>SNS運用代行に依頼</div>
+          <div class="a-badge">年間 ¥2,736,000</div>
+        </div>
+        <div class="anchor-col col-diy">
+          <div class="a-label">先生が自分でやった場合</div>
+          <div class="a-price">¥160,000<span class="unit">/月</span></div>
+          <div class="a-sub">月20時間 × 施術単価換算<br>＋ 疲弊・モチベーション低下</div>
+          <div class="a-badge">機会損失 年間¥1,920,000</div>
+        </div>
+        <div class="anchor-col col-ai">
+          <div class="a-label">このシステムを使った場合</div>
+          <div class="a-price">¥5,000<span class="unit">/月</span></div>
+          <div class="a-sub">AI利用料のみ<br>先生の作業時間：月30分以下</div>
+          <div class="a-badge">▼ 97.8%のコスト削減</div>
+        </div>
+      </div>
+      <div class="saving-bar">
+        <div class="sb-text">
+          外注と比べると、毎月 <strong>¥223,000の差</strong>。<br>
+          年間にすると <strong>¥2,676,000</strong> の差になります。
+        </div>
+        <div class="sb-num">
+          <div class="n">97.8%</div>
+          <div class="s">コスト削減</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 外注費用の内訳（アンカー強化） -->
+    <p style="font-size:13px; font-weight:700; color:#991b1b; margin-bottom:10px;">📋 外注した場合の費用内訳（月額）</p>
+    <div class="outsource-breakdown">
+      <table>
+        <thead>
+          <tr>
+            <th>依頼内容</th>
+            <th>頻度</th>
+            <th class="od-price">月額費用</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              Instagram運用代行（投稿文＋画像）
+              <div class="od-note">月8投稿 × @15,000円</div>
+            </td>
+            <td>週2回</td>
+            <td class="od-price">¥120,000</td>
+          </tr>
+          <tr>
+            <td>
+              note記事ライター
+              <div class="od-note">月2本 × @30,000円（SEO記事相場）</div>
+            </td>
+            <td>隔週</td>
+            <td class="od-price">¥60,000</td>
+          </tr>
+          <tr>
+            <td>
+              X投稿・Googleマップ・LINE文章作成
+              <div class="od-note">月20本程度 × @2,400円</div>
+            </td>
+            <td>週複数回</td>
+            <td class="od-price">¥48,000</td>
+          </tr>
+          <tr>
+            <td><strong>合計</strong></td>
+            <td></td>
+            <td class="od-price">¥228,000 / 月</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ROIボックス -->
+    <div class="roi-box">
+      <div class="roi-title">💡 元が取れるまで、どれくらいかかるか？</div>
+      <div class="roi-grid">
+        <div class="roi-item">
+          <div class="ri-num">¥5,000</div>
+          <div class="ri-label">このシステムの<br>月額運用コスト</div>
+        </div>
+        <div class="roi-item">
+          <div class="ri-num">1人</div>
+          <div class="ri-label">新患1人の来院で<br>ほぼ元が取れる<br><span style="font-size:10px; color:#6ee7b7;">（初回施術だけで回収）</span></div>
+        </div>
+        <div class="roi-item">
+          <div class="ri-num">∞</div>
+          <div class="ri-label">SNSが育てば<br>毎月新患が来る<br>仕組みに変わる</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI費用の内訳 -->
+    <div class="ai-cost-box">
+      <div class="ac-head">
+        <div class="ac-title">✅ このシステムで実際にかかる費用</div>
+        <div class="ac-price">月 ¥2,000〜5,000<span>程度</span></div>
+      </div>
+      <table class="ai-cost-table">
+        <tr>
+          <td>Claude（AI文章生成）</td>
+          <td class="acp">¥1,000〜3,000 / 月</td>
+        </tr>
+        <tr>
+          <td>fal.ai（AI画像生成 / Instagram用）</td>
+          <td class="acp">¥500〜1,500 / 月</td>
+        </tr>
+        <tr>
+          <td>Discord（通知・確認アプリ）</td>
+          <td class="acp">無料</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- 7. まとめ -->
+  <div class="section">
+    <div class="section-label">SUMMARY</div>
+    <h2>まとめ</h2>
+    <p class="lead">
+      このシステムは「先生が一人でSNSを頑張る」ではなく、
+      「AIアシスタントが下書きを作り、先生が最終確認する」という仕組みです。
+    </p>
+    <ul class="summary-list">
+      <li><span class="s-check">✓</span>毎週5プラットフォーム分のコンテンツが自動で届く</li>
+      <li><span class="s-check">✓</span>先生は確認してコピペするだけ</li>
+      <li><span class="s-check">✓</span>坂本先生の言葉・文体で書かれる</li>
+      <li><span class="s-check">✓</span>内容がかぶらない仕組みが入っている</li>
+      <li><span class="s-check">✓</span>旅行中・繁忙期でも途切れない</li>
+      <li><span class="s-check">✓</span>月2,000〜5,000円程度で運用できる</li>
+    </ul>
+    <div class="cta-box">
+      <div class="cta-title">次のステップ</div>
+      <p>実際に生成されたコンテンツをDiscordで確認していただき、文体・内容についてご意見をいただければ、さらに坂本先生らしい投稿に調整できます。まずは実際の出力を一緒に見てみましょう。</p>
+    </div>
+  </div>
+
+</div><!-- /body -->
+
+<footer>
+  本資料に関するご質問・ご要望はお気軽にご相談ください
+</footer>
+
+</div><!-- /page -->
+</body>
+</html>
